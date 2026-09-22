@@ -4,7 +4,18 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 
 # =========================
-# KONFIGURASI
+# KONFIGURASI HALAMAN
+# =========================
+
+st.set_page_config(
+    page_title="MedBot IndoBERT",
+    page_icon="🩺",
+    layout="centered"
+)
+
+
+# =========================
+# KONFIGURASI MODEL
 # =========================
 
 MODEL_NAME = "NicholasHG25/medbot-indobert-final"
@@ -30,12 +41,6 @@ tokenizer, model = load_model()
 # =========================
 # TAMPILAN
 # =========================
-
-st.set_page_config(
-    page_title="MedBot IndoBERT",
-    page_icon="🩺",
-    layout="centered"
-)
 
 st.title("🩺 MedBot IndoBERT")
 
