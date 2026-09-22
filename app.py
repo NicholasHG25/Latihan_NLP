@@ -538,5 +538,6 @@ with st.form("chat_form", clear_on_submit=True):
 if send_clicked:
     if user_text.strip():
         send_message(user_text)
+        st.rerun()
     else:
         st.warning("Silakan ketik keluhan terlebih dahulu.")
