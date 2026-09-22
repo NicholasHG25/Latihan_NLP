@@ -254,13 +254,32 @@ st.markdown(
         box-shadow: 0 0 0 1px #3f51b5;
     }
 
-    /* Send button */
-    .send-button button {
+    /* Tombol Kirim */
+    div[data-testid="stFormSubmitButton"] button {
+        height: 42px !important;
+        min-height: 42px !important;
         border-radius: 10px !important;
         border: none !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
         background: #3f51b5 !important;
-        color: #ffffff !important;
+        color: white !important;
+        margin-top: 0px !important;
+    }
+    
+    div[data-testid="stFormSubmitButton"] button:hover {
+        background: #303f9f !important;
+        color: white !important;
+    }
+    
+    /* Input chat */
+    div[data-testid="stTextInput"] input {
+        height: 42px !important;
+        min-height: 42px !important;
+        border-radius: 10px !important;
+        border: 1px solid #d7dbe8;
+        padding: 8px 12px;
+        background: #ffffff;
+        color: #222222;
     }
 
     /* Chat area */
@@ -491,31 +510,33 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 
 # =========================================================
-# INPUT
+# INPUT CHAT
 # =========================================================
 
-input_col, send_col = st.columns([8, 2], gap="small")
+with st.form("chat_form", clear_on_submit=True):
 
-with input_col:
-    user_text = st.text_input(
-        "Input",
-        placeholder="Ketik keluhan kesehatan Anda...",
-        label_visibility="collapsed",
-        key="user_text",
+    input_col, send_col = st.columns(
+        [8, 2],
+        gap="small",
+        vertical_alignment="center"
     )
 
-with send_col:
-    st.markdown('<div class="send-button">', unsafe_allow_html=True)
-    send_clicked = st.button(
-        "Kirim",
-        use_container_width=True,
-        key="send_message",
-    )
-    st.markdown("</div>", unsafe_allow_html=True)
+    with input_col:
+        user_text = st.text_input(
+            "Input",
+            placeholder="Ketik keluhan kesehatan Anda...",
+            label_visibility="collapsed",
+            key="user_text",
+        )
+
+    with send_col:
+        send_clicked = st.form_submit_button(
+            "Kirim",
+            use_container_width=True,
+        )
 
 if send_clicked:
     if user_text.strip():
         send_message(user_text)
-        st.rerun()
     else:
         st.warning("Silakan ketik keluhan terlebih dahulu.")
