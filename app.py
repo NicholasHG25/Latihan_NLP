@@ -1,4 +1,4 @@
-import streamlit as st
+
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import html
@@ -208,6 +208,8 @@ st.markdown(
         font-size: 12.5px;
         padding: 9px 20px;
         border-bottom: 1px solid #f0e2b6;
+        border-radius: 0 0 14px 14px;
+        margin-bottom: 10px;
     }
 
     /* Card */
@@ -222,16 +224,19 @@ st.markdown(
     /* Topic chips */
     div.stButton > button {
         border-radius: 999px;
-        border: none;
+        border: 1px solid #e4e8f0;
         font-size: 12.5px;
         font-weight: 700;
-        padding: 5px 14px;
+        padding: 5px 10px;
         min-height: 34px;
         box-shadow: none;
+        background: #f5f7fb;
+        color: #27324a;
     }
 
     div.stButton > button:hover {
-        border: none;
+        border: 1px solid #c8d0e0;
+        background: #eef2f9;
         transform: translateY(-1px);
     }
 
@@ -403,24 +408,27 @@ def send_message(text):
 
 st.markdown(
     """
-    <div class="mb-card">
-        <div class="mb-header">
-            <div class="mb-logo">🏥</div>
-            <div>
-                <div class="mb-title">
-                    MedBot — Asisten Kesehatan
-                    <span class="mb-badge">IndoBERT Fine-tuned</span>
-                </div>
-                <div class="mb-status">
-                    ● Online · Intent Classification Engine
-                </div>
+    <div class="mb-header">
+        <div class="mb-logo">🏥</div>
+        <div>
+            <div class="mb-title">
+                MedBot — Asisten Kesehatan
+                <span class="mb-badge">IndoBERT Fine-tuned</span>
+            </div>
+            <div class="mb-status">
+                ● Online · Intent Classification Engine
             </div>
         </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
-        <div class="mb-warning">
-            ⚠️ MedBot hanya untuk edukasi. Bukan pengganti dokter.
-            Darurat medis: hubungi 119.
-        </div>
+st.markdown(
+    """
+    <div class="mb-warning">
+        ⚠️ MedBot hanya untuk edukasi. Bukan pengganti dokter.
+        Darurat medis: hubungi 119.
     </div>
     """,
     unsafe_allow_html=True,
