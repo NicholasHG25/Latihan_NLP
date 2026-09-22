@@ -93,15 +93,15 @@ if st.button("🔍 Prediksi", type="primary"):
 
 
         # Ambil nama label dari config model
-        label = model.config.id2label[str(prediction)]
-
-
+        label = model.config.id2label[prediction]
+        
+        
         st.success("Prediksi berhasil!")
-
+        
         st.subheader("Hasil Prediksi")
-
+        
         st.write(f"**Kategori:** `{label}`")
-
+        
         st.write(
             f"**Confidence:** `{confidence * 100:.2f}%`"
         )
