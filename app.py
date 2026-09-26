@@ -2,6 +2,7 @@ import streamlit as st
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import html
+import re
 
 
 # =========================================================
@@ -140,9 +141,9 @@ QUICK_TOPICS = [
 st.markdown(
     """
     <style>
-    /* Background */
+    /* Background — DARK MODE */
     .stApp {
-        background: #ffffff;
+        background: #0e1117;
     }
 
     [data-testid="stHeader"] {
@@ -153,6 +154,15 @@ st.markdown(
         max-width: 720px;
         padding-top: 1.5rem;
         padding-bottom: 5rem;
+    }
+
+    [data-testid="stSidebar"] {
+        background: #161925;
+        border-right: 1px solid #262b3d;
+    }
+
+    [data-testid="stSidebar"] * {
+        color: #e4e6f0 !important;
     }
 
     /* Header */
@@ -185,8 +195,8 @@ st.markdown(
     }
 
     .mb-badge {
-        background: #c8f7d4;
-        color: #1a7f37;
+        background: #1f4d33;
+        color: #6ee7a8;
         font-size: 11px;
         font-weight: 600;
         padding: 2px 8px;
@@ -196,18 +206,18 @@ st.markdown(
     }
 
     .mb-status {
-        color: #dfe3fa;
+        color: #c7cbf0;
         font-size: 12.5px;
         margin-top: 2px;
     }
 
     /* Warning */
     .mb-warning {
-        background: #fff8e1;
-        color: #8a6d3b;
+        background: #3a3320;
+        color: #f0d896;
         font-size: 12.5px;
         padding: 9px 20px;
-        border-bottom: 1px solid #f0e2b6;
+        border-bottom: 1px solid #4d4326;
         border-radius: 0 0 14px 14px;
         margin-bottom: 10px;
     }
@@ -216,42 +226,47 @@ st.markdown(
     .mb-card {
         border-radius: 18px;
         overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        border: 1px solid #e2e8f0;
-        background: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+        border: 1px solid #262b3d;
+        background: #161925;
     }
 
     /* Topic chips */
     div.stButton > button {
         border-radius: 999px;
-        border: 1px solid #e4e8f0;
+        border: 1px solid #2e3348;
         font-size: 12.5px;
         font-weight: 700;
         padding: 5px 10px;
         min-height: 34px;
         box-shadow: none;
-        background: #f5f7fb;
-        color: #27324a;
+        background: #1c2032;
+        color: #d7dae8;
     }
 
     div.stButton > button:hover {
-        border: 1px solid #c8d0e0;
-        background: #eef2f9;
+        border: 1px solid #4c56a0;
+        background: #232842;
+        color: #ffffff;
         transform: translateY(-1px);
     }
 
     /* Input */
     div[data-testid="stTextInput"] input {
         border-radius: 10px;
-        border: 1px solid #d7dbe8;
+        border: 1px solid #2e3348;
         padding: 8px 12px;
-        background: #ffffff;
-        color: #222222;
+        background: #1c2032;
+        color: #e8eaf5;
+    }
+
+    div[data-testid="stTextInput"] input::placeholder {
+        color: #7b7f9a;
     }
 
     div[data-testid="stTextInput"] input:focus {
-        border-color: #3f51b5;
-        box-shadow: 0 0 0 1px #3f51b5;
+        border-color: #5c68d6;
+        box-shadow: 0 0 0 1px #5c68d6;
     }
 
     /* Tombol Kirim */
@@ -261,30 +276,25 @@ st.markdown(
         border-radius: 10px !important;
         border: none !important;
         font-weight: 700 !important;
-        background: #3f51b5 !important;
+        background: #5c68d6 !important;
         color: white !important;
         margin-top: 0px !important;
     }
-    
+
     div[data-testid="stFormSubmitButton"] button:hover {
-        background: #303f9f !important;
+        background: #4a55b8 !important;
         color: white !important;
     }
-    
+
     /* Input chat */
     div[data-testid="stTextInput"] input {
         height: 42px !important;
         min-height: 42px !important;
-        border-radius: 10px !important;
-        border: 1px solid #d7dbe8;
-        padding: 8px 12px;
-        background: #ffffff;
-        color: #222222;
     }
 
     /* Chat area */
     .chat-area {
-        background: #ffffff;
+        background: #0e1117;
         padding: 8px 0 4px 0;
     }
 
@@ -295,7 +305,7 @@ st.markdown(
     }
 
     .user-bubble {
-        background: #3f51b5;
+        background: #5c68d6;
         color: white;
         padding: 11px 15px;
         border-radius: 16px 16px 3px 16px;
@@ -316,7 +326,7 @@ st.markdown(
         width: 30px;
         height: 30px;
         border-radius: 50%;
-        background: #3f51b5;
+        background: #5c68d6;
         color: white;
         display: flex;
         align-items: center;
@@ -326,15 +336,22 @@ st.markdown(
     }
 
     .bot-bubble {
-        background: #f7f8fc;
-        color: #222222;
+        background: #1c2032;
+        color: #e8eaf5;
         padding: 12px 16px;
         border-radius: 16px 16px 16px 3px;
         max-width: 78%;
         font-size: 13.5px;
         line-height: 1.6;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         word-wrap: break-word;
+        border: 1px solid #262b3d;
+    }
+
+    .bot-meta {
+        color: #7b7f9a;
+        font-size: 10.5px;
+        margin-top: 4px;
     }
 
     /* Hide Streamlit branding/menu for a cleaner app */
@@ -395,18 +412,20 @@ def chatbot_reply(text):
 # SESSION STATE
 # =========================================================
 
+WELCOME_ENTRY = (
+    "bot",
+    "👋 Halo! Aku <b>MedBot</b>, asisten kesehatan berbasis "
+    "<b>IndoBERT</b> yang sudah dilatih mengenali 10 kategori "
+    "keluhan umum (maag, migrain, kehamilan, kulit, dan lainnya)."
+    "<br><br>"
+    "Klik salah satu topik di atas, atau langsung ketik keluhanmu "
+    "di kolom bawah ya!",
+    None,
+    None,
+)
+
 if "chat_log" not in st.session_state:
-    st.session_state.chat_log = [
-        (
-            "bot",
-            "👋 Halo! Aku <b>MedBot</b>, asisten kesehatan berbasis "
-            "<b>IndoBERT</b> yang sudah dilatih mengenali 10 kategori "
-            "keluhan umum (maag, migrain, kehamilan, kulit, dan lainnya)."
-            "<br><br>"
-            "Klik salah satu topik di atas, atau langsung ketik keluhanmu "
-            "di kolom bawah ya!",
-        )
-    ]
+    st.session_state.chat_log = [WELCOME_ENTRY]
 
 
 def send_message(text):
@@ -417,8 +436,21 @@ def send_message(text):
 
     reply, label, confidence = chatbot_reply(text)
 
-    st.session_state.chat_log.append(("user", html.escape(text)))
-    st.session_state.chat_log.append(("bot", reply))
+    st.session_state.chat_log.append(("user", html.escape(text), None, None))
+    st.session_state.chat_log.append(("bot", reply, label, confidence))
+
+
+# =========================================================
+# SIDEBAR — PENGATURAN
+# =========================================================
+
+with st.sidebar:
+    st.markdown("### ⚙️ Pengaturan")
+    show_confidence = st.checkbox("Tampilkan kategori & confidence terdeteksi", value=False)
+    st.markdown("---")
+    if st.button("🗑️ Bersihkan riwayat chat", use_container_width=True):
+        st.session_state.chat_log = [WELCOME_ENTRY]
+        st.rerun()
 
 
 # =========================================================
@@ -482,7 +514,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-for role, message in st.session_state.chat_log:
+for entry in st.session_state.chat_log:
+    role, message, label, confidence = entry
     if role == "user":
         st.markdown(
             f"""
@@ -495,12 +528,17 @@ for role, message in st.session_state.chat_log:
     else:
         # Markdown sederhana agar **teks tebal** dari template tetap bekerja.
         # Escape hanya karakter HTML berbahaya; tag <b> dari welcome message
-        # sengaja dipertahankan.
+        # sengaja dipertahankan. **kata** diubah manual ke <b> supaya pasti
+        # tebal (tidak selalu ke-parse otomatis kalau dicampur dgn HTML mentah).
+        bold_message = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", message)
+        meta_html = ""
+        if show_confidence and label is not None:
+            meta_html = f'<div class="bot-meta">Kategori: {label} · confidence: {confidence:.2f}</div>'
         st.markdown(
             f"""
             <div class="bot-row">
                 <div class="bot-icon">🤖</div>
-                <div class="bot-bubble">{message}</div>
+                <div class="bot-bubble">{bold_message}{meta_html}</div>
             </div>
             """,
             unsafe_allow_html=True,
